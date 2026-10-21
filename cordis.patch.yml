@@ -1,0 +1,17 @@
+# ============================================================================
+# dsh-cc98-duty —— DSH bundle patch（插件自带的挂载声明）
+# ============================================================================
+# 装上之后，profile 只要在 `dsh.profile.bundles` 里列出本包名即生效：
+#
+#   dsh plugin --profile desktop add link:C:\path\to\dsh-cc98-duty
+#
+# 真正的用户配置在插件自己的 config 里（设置页可改），这里只放默认值。
+# ⚠️ entry 的 id 必须等于插件 index.js 里 `export const name`（= cc98-duty），
+#    否则设置页写入会找不到命名空间（bili 踩过：volatile 字段更新需要 id == ns）。
+# ============================================================================
+
+- insert:
+    - id: cc98-duty
+      name: dsh-cc98-duty
+      config:
+        enabled: true
