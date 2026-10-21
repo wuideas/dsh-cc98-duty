@@ -2,6 +2,10 @@
 
 > **CC98（浙大校内论坛）的 DSH 插件** —— 看首页、读帖、搜帖、列版面，也能发帖 / 回帖 / 评论。
 > 写操作**默认关**，要过「总闸 + 确认词」两道；这个号挂着使用者的浙大通行证，它写出去的每个字都算在他头上。
+>
+> GitHub：https://github.com/wuideas/dsh-cc98-duty
+>
+> ⚠️ **维护状态**：作者不打算继续维护。能用就行，坏了欢迎 fork 自己改（MIT）。
 
 ## 它是什么
 
@@ -14,6 +18,9 @@
 ## 装
 
 ```powershell
+# 从 GitHub 装（需要 pnpm 能访问 GitHub）
+dsh plugin --profile desktop add github:wuideas/dsh-cc98-duty
+
 # 本地开发：把插件目录 link 进 desktop profile
 dsh plugin --profile desktop add link:C:\Users\<你>\Documents\deepseek-harness\dsh-cc98-duty
 ```
