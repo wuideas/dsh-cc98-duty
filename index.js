@@ -207,7 +207,19 @@ export function apply(ctx, config) {
   const tool = (spec) => ctx.tools.register(defineTool({
     ...spec,
     output: textOutput,
-    async execute(args, exec) { return safe(await spec.execute(args || {}, exec)) },
+    async execute(args, exec) {
+      // ⭐ 总开关：settings 里 `enabled` 关掉后，除 status / config 外的工具一律拒绝
+      //    （不碰 profile、不用重启；设置页和 cc98_config 照常可用，才能再打开）
+      refreshCfg()
+      if (!cfg.enabled && spec.name !== 'cc98_status' && spec.name !== 'cc98_config') {
+        return safe({
+          ok: false,
+          disabled: true,
+          hint: '插件总开关关着（设置 → 刷CC98 → 启用插件）。要用的话先把它打开，或者调 cc98_config 传 { enabled: true }。',
+        })
+      }
+      return safe(await spec.execute(args || {}, exec))
+    },
   }))
 
   /** 写操作闸门：总闸 + 确认词 + 最小间隔。返回 null = 放行，否则返回给模型的拒绝说明 */
@@ -249,6 +261,7 @@ export function apply(ctx, config) {
       return {
         ok: true,
         ...st,
+        pluginEnabled: cfg.enabled,
         write: { enabled: cfg.writeEnabled, confirmWordSet: Boolean(cfg.confirmWord) },
         preset: cfg.presetName,
         perDay: cfg.perDay,
@@ -498,6 +511,7 @@ export function apply(ctx, config) {
       presets: listPresets(stateDir),
       account: client.getCredentialSummary(),
       cc98,
+      pluginEnabled: cfg.enabled,
       write: { enabled: cfg.writeEnabled, confirmWordSet: Boolean(cfg.confirmWord) },
     }
   }

@@ -295,9 +295,10 @@ try {
 
 console.log('\n== 4. 真点开关：写闸门开 → 关（验证后必须关回去） ==')
 try {
-  const sw = () => findAll(tree, (n) => n.props && 'data-cc-sw' in n.props)[0]
-  let toggle = sw()
-  if (!toggle) throw new Error('找不到开关')
+  const swList = () => findAll(tree, (n) => n.props && 'data-cc-sw' in n.props)
+  if (swList().length < 3) throw new Error('开关数量不对（应至少 3 个：启用插件 / 写闸门 / 值班只读）：' + swList().length)
+  // 顺序：0=启用插件  1=写操作闸门  2=值班轮只读
+  let toggle = swList()[1]
   await toggle.props.onClick()          // 打开写闸门
   await flush()
   tree = renderRoot(); await flush()
@@ -308,7 +309,7 @@ try {
   if (has('每次发评论')) ok('页面展开确认词区', '确认词说明出现')
   else bad('确认词区展开', new Error('没看到确认词说明'))
   // 关回去 —— 绝不留开着的写闸门
-  const toggle2 = sw()
+  const toggle2 = swList()[1]
   await toggle2.props.onClick()
   await flush()
   tree = renderRoot(); await flush()
@@ -316,6 +317,26 @@ try {
   if (stOff.write?.enabled === false) ok('写闸门已恢复成「关」')
   else bad('写闸门恢复', new Error('writeEnabled=' + JSON.stringify(stOff.write)))
 } catch (e) { bad('写闸门开关', e) }
+
+console.log('\n== 4.5 总开关：关 → 开（验证后必须开回去） ==')
+try {
+  const swList = () => findAll(tree, (n) => n.props && 'data-cc-sw' in n.props)
+  await swList()[0].props.onClick()      // 关掉总开关
+  await flush()
+  tree = renderRoot(); await flush()
+  tree = renderRoot()
+  const stDis = await (await fetch('/api/cc98-duty/status')).json()
+  if (stDis.pluginEnabled === false) ok('点「启用插件」→ 宿主 enabled=false')
+  else bad('总开关关闭', new Error('pluginEnabled=' + JSON.stringify(stDis.pluginEnabled)))
+  if (has('插件已关闭')) ok('页面显示「插件已关闭」徽章')
+  else bad('关闭徽章', new Error('没看到徽章：' + allText().slice(0, 160)))
+  await swList()[0].props.onClick()      // 开回去
+  await flush()
+  tree = renderRoot(); await flush()
+  const stBack = await (await fetch('/api/cc98-duty/status')).json()
+  if (stBack.pluginEnabled === true) ok('总开关已恢复成「开」')
+  else bad('总开关恢复', new Error('pluginEnabled=' + JSON.stringify(stBack.pluginEnabled)))
+} catch (e) { bad('总开关', e) }
 
 console.log('\n== 5. 预设下拉 ==')
 try {

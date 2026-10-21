@@ -289,6 +289,12 @@ textarea[data-cc-input]{resize:vertical;}
           '写操作闸门' + (v ? '（打开）' : '（关闭）'), 'gate-write')
       }
 
+      /* ── 插件总开关（关掉后 cc98_* 工具一律拒绝；不用改 profile、不用重启） ── */
+      async function setEnabled(v) {
+        await patchConfig({ enabled: Boolean(v) }, 'status',
+          '插件总开关' + (v ? '（打开）' : '（关闭）'), 'toggle-enabled')
+      }
+
       async function saveWord() {
         const w = String(confirmWord == null ? '' : confirmWord).trim()
         if (!w) { say('gate', '确认词不能为空 —— 空确认词等于写操作全被拒', 'warn'); return }
@@ -523,6 +529,7 @@ textarea[data-cc-input]{resize:vertical;}
         ? String(account.username) : ''
       const writeOn = typeof cfg.writeEnabled === 'boolean' ? cfg.writeEnabled : writeInfo.enabled === true
       const roOn = typeof cfg.dutyReadOnly === 'boolean' ? cfg.dutyReadOnly : true
+      const pluginOn = typeof cfg.enabled === 'boolean' ? cfg.enabled : true
       const wordSet = writeInfo.confirmWordSet === true
         || (typeof cfg.confirmWord === 'string' && cfg.confirmWord.length > 0)
       const selectedPreset = presets.find((p) => p.name === presetName) || null
@@ -541,9 +548,17 @@ textarea[data-cc-input]{resize:vertical;}
             h('span', { 'data-cc-badge': '', 'data-good': loggedIn ? '' : undefined }, loginText),
             acctName ? h('span', { 'data-cc-badge': '' }, '本站账号：' + acctName) : null,
             h('span', { 'data-cc-badge': '' }, 'v' + version),
+            pluginOn ? null : h('span', { 'data-cc-badge': '', 'data-warn': '' }, '插件已关闭'),
             h('div', { 'data-cc-grow': '' }),
             btn('refresh', '刷新', doRefresh)),
           h('div', { 'data-cc-note': '' }, '家目录：' + (home || '（未知）')),
+          h(ToggleRow, {
+            label: '启用插件',
+            note: '关掉后所有 cc98_* 工具都拒绝服务（不用改 profile、不用重启）。设置页和这个开关照常可用。',
+            on: pluginOn,
+            disabled: Boolean(busy),
+            onChange: setEnabled,
+          }),
           msgFor('status')),
 
         /* 2 ── 账号 ── */
@@ -590,7 +605,7 @@ textarea[data-cc-input]{resize:vertical;}
           h('div', { 'data-cc-row': '' },
             h('div', { 'data-cc-grow': '' },
               h('div', { 'data-cc-label': '' }, '每天最多挑几条'),
-              h('div', { 'data-cc-note': '' }, '0 = 不自动（手动「跑一轮」仍然可以）')),
+              h('div', { 'data-cc-note': '' }, '0 = 不自动；当前版本还没有定时器（v0.2 路线图），这个数字先留着')),
             h('input', {
               'data-cc-input': '', 'data-cc-num': '', type: 'number', min: 0, max: 20,
               value: perDay == null ? '' : perDay,

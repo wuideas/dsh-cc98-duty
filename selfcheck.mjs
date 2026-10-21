@@ -104,6 +104,21 @@ try {
   else bad('写闸门拦住引用回复', new Error('没拦住'))
 } catch (e) { bad('写闸门拦住引用回复', e) }
 
+console.log('\n== 5.5 总开关（关掉后工具该拒绝） ==')
+try {
+  await call('cc98_config', { action: 'set', patch: { enabled: false } })
+  const r = await call('cc98_front')
+  if (r.ok === false && r.disabled === true) ok('总开关关掉后 cc98_front 被拒')
+  else bad('总开关关掉后 cc98_front', new Error('没拦住：' + JSON.stringify(r).slice(0, 150)))
+  const st = await call('cc98_status')
+  if (st.pluginEnabled === false) ok('cc98_status 仍可用并报 pluginEnabled=false')
+  else bad('cc98_status 总开关状态', new Error('pluginEnabled=' + JSON.stringify(st.pluginEnabled)))
+  await call('cc98_config', { action: 'set', patch: { enabled: true } })
+  const back = await call('cc98_config', { action: 'get' })
+  if (back.config?.enabled === true) ok('总开关已恢复成「开」')
+  else bad('总开关恢复', new Error('enabled=' + JSON.stringify(back.config?.enabled)))
+} catch (e) { bad('总开关', e) }
+
 console.log('\n== 6. 设置页 HTTP 路由 ==')
 const hit = async (method, path, body) => {
   const def = routes.find((r) => r.path === '/api/cc98-duty')

@@ -43,6 +43,7 @@ dsh plugin --profile desktop add link:C:\Users\<你>\Documents\deepseek-harness\
 
 | 项 | 说明 |
 |---|---|
+| **启用插件** | **总开关**。关掉后所有 `cc98_*` 工具拒绝服务（设置页和本开关照常可用），不用改 profile、不用重启 |
 | 账号 | CC98 **站内**账号密码（不是学号 / 不是浙大通行证密码）。密码只落 `~/.dsh/cc98-duty/credential.json` |
 | 每天最多挑几条 | 给将来的定时值班用；`0` = 不定时 |
 | 关注关键词 | 一行一个；值班预设用它搜帖 |
@@ -77,6 +78,18 @@ dsh plugin --profile desktop add link:C:\Users\<你>\Documents\deepseek-harness\
 > 最接近的三种做法：**引用回复**（占一个新楼层，已实现）、赞/踩、评分（带理由，会动对方威望 —— 没做）。
 > 另外：发帖/回帖的接口**只返回 HTTP 200、不回 body**，所以插件发完会去版面/帖子回查确认。
 
+## 定时值班（**当前版本还没有**）
+
+⚠️ v0.1 **没有定时器**。它只注册工具 + 设置页，不会自己每天跑。
+「每天自动看一轮」在路线图里（v0.2：定时 + headless 跑一轮 + 日报 + 判重表）。
+
+现在想让它看一轮，有两个办法：
+
+1. 在会话里直接让助手跑（工具都已就绪）
+2. 用 DSH 自己的定时提醒，到点提醒你去让它跑
+
+真正全自动之前，请当它是「随时可调用的看帖工具」，不是「自己会干活的值班员」。
+
 ## 家目录
 
 ```
@@ -98,9 +111,9 @@ $env:DSH_DESKTOP_NODE_EXECUTABLE='C:\Users\<你>\AppData\Local\Programs\DeepSeek
 & 'C:\Users\<你>\AppData\Local\Programs\DeepSeek Harness\resources\runtime\bin\node.cmd' .\clientcheck.mjs
 ```
 
-- `selfcheck.mjs`：假 ctx 跑一遍 `apply()` —— 工具注册、真打 98 的读接口、写闸门拦截、设置页 HTTP 路由（**19 项**）
+- `selfcheck.mjs`：假 ctx 跑一遍 `apply()` —— 工具注册、真打 98 的读接口、写闸门拦截、总开关拦截、设置页 HTTP 路由（**22 项**）
 - `clientcheck.mjs`：假 React / 假 DOM 把 `client.js` **真的挂起来**，`fetch` 接到插件真路由上 ——
-  检查页面渲染、点「测试 98 连接」、点开/关写闸门（跑完自动把闸门恢复成「关」）（**15 项**）
+  检查页面渲染、点「测试 98 连接」、点开/关写闸门、点总开关（跑完自动把闸门恢复成「关」）（**18 项**）
 
 ## 红线
 
